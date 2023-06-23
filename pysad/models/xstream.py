@@ -33,11 +33,11 @@ class xStream(BaseModel):
         self.cur_window = []
         self.ref_window = None
 
-    def fit_partial(self, X, y=None):
+    def fit_partial(self, Xid, y=None):
         """Fits the model to next instance.
 
         Args:
-            X (np.float array of shape (num_features,)): The instance to fit.
+            X (np.array([id, dict{feature name: value}])): The instance to fit.
             y (int): Ignored since the model is unsupervised (Default=None).
 
         Returns:
@@ -45,6 +45,9 @@ class xStream(BaseModel):
         """
         self.step += 1
 
+        x_id = Xid[0]
+        X = Xid[1]
+        
         X = self.streamhash.fit_transform_partial(X)
 
         X = X.reshape(1, -1)
@@ -61,7 +64,7 @@ class xStream(BaseModel):
 
         return self
 
-    def score_partial(self, X):
+    def score_partial(self, Xid):
         """Scores the anomalousness of the next instance.
 
         Args:
@@ -70,6 +73,9 @@ class xStream(BaseModel):
         Returns:
             score (float): The anomalousness score of the input instance.
         """
+        
+        X = Xid[1]
+        
         X = self.streamhash.fit_transform_partial(X)
         X = X.reshape(1, -1)
         score = self.hs_chains.score(X).flatten()

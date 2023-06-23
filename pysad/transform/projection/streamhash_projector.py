@@ -28,7 +28,7 @@ class StreamhashProjector(BaseTransformer):
         """
         return self
 
-    def transform_partial(self, X):
+    def transform_partial(self, X_in):
         """Projects particular (next) timestep's vector to (possibly) lower dimensional space.
 
         Args:
@@ -37,15 +37,23 @@ class StreamhashProjector(BaseTransformer):
         Returns:
             projected_X (np.float array of shape (num_components,)): Projected feature vector.
         """
+        
+        X = np.array(list(X_in.values()), dtype=float)
+        X_name = np.array(list(X_in.keys()), dtype=str)
+        
         X = X.reshape(1, -1)
 
-        ndim = X.shape[1]
-
-        feature_names = [str(i) for i in range(ndim)]
-
-        R = np.array([[self._hash_string(k, f)
-                       for f in feature_names]
-                      for k in self.keys])
+        if X_name is None:
+            ndim = X.shape[1]
+            feature_names = [str(i) for i in range(ndim)]
+            
+            R = np.array([[self._hash_string(k, f)
+                           for f in feature_names]
+                          for k in self.keys])
+        else:
+            R = np.array([[self._hash_string(k, f)
+                           for f in X_name]
+                          for k in self.keys])            
 
         Y = np.dot(X, R.T).squeeze()
 
